@@ -1,43 +1,49 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "mini-web:1.0"
+        CONTAINER_NAME = "mini-web"
+        PORT = "8082"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
-                git 'YOUR_REPO_URL'
+                git 'https://github.com/JawadButt07/Web-Page.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build('mini-web:1.0')
-                }
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Container') {
             steps {
-                echo "No real tests for static page, but SonarQube scan can go here"
+                sh '''
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+                    docker run -d -p $PORT:80 --name $CONTAINER_NAME $IMAGE_NAME
+                '''
             }
         }
 
-        stage('Push Image') {
+        stage('Verify') {
             steps {
-                echo "Push to DockerHub (optional)"
+                sh 'docker ps'
             }
         }
     }
+
+    post {
+        success {
+            echo "✅ Deployment Successful"
+        }
+        failure {
+            echo "❌ Build Failed - Check Logs"
+        }
+    }
 }
-
-stage('SonarQube Analysis') {
-   step {
-       withSoanrQubeEnv('SonarQubeServer') {
-            sh  'sonar-scanner -Dsonar.projectKey=mini-web -Dsonar.sources=.'
-          }
-
-      }
-
-   }
-                      
-
