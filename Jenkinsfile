@@ -5,13 +5,22 @@ pipeline {
         IMAGE_NAME = "mini-web:1.0"
         CONTAINER_NAME = "mini-web"
         PORT = "8082"
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('SonarQube Analysis') {
             steps {
-                git 'https://github.com/JawadButt07/Web-Page.git'
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh '''
+                        sonar-scanner \
+                        -Dsonar.projectKey=mini-web \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://sonarqube:9000 \
+                        -Dsonar.login=$SONAR_TOKEN
+                    '''
+                }
             }
         }
 
@@ -40,10 +49,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment Successful"
+            echo "✅ Deployment + SonarQube Successful"
         }
         failure {
-            echo "❌ Build Failed - Check Logs"
+            echo "❌ Build Failed"
         }
     }
 }
