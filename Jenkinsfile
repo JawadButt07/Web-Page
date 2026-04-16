@@ -10,12 +10,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/JawadButt07/Web-Page.git'
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
@@ -57,10 +51,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ CI/CD SUCCESS: Build + Sonar + Deploy Done"
+            echo "✅ Pipeline SUCCESS"
         }
         failure {
-            echo "❌ Pipeline Failed - Check Logs"
+            echo "❌ Pipeline FAILED"
         }
     }
 }
