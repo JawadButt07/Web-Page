@@ -10,13 +10,21 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/JawadButt07/Web-Page.git'
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
                     sh '''
-                        sonar-scanner \
+                        docker run --rm \
+                        -v $WORKSPACE:/usr/src \
+                        sonarsource/sonar-scanner-cli \
                         -Dsonar.projectKey=mini-web \
-                        -Dsonar.sources=. \
+                        -Dsonar.sources=/usr/src \
                         -Dsonar.host.url=http://sonarqube:9000 \
                         -Dsonar.login=$SONAR_TOKEN
                     '''
@@ -49,10 +57,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment + SonarQube Successful"
+            echo "✅ CI/CD SUCCESS: Build + Sonar + Deploy Done"
         }
         failure {
-            echo "❌ Build Failed"
+            echo "❌ Pipeline Failed - Check Logs"
         }
     }
 }
